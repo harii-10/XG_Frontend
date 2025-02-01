@@ -253,18 +253,25 @@ const AuthPage = () => {
     dispatch(loginStart());
     
     try {
+      // Log the request details
       const endpoint = isLogin ? 'login' : 'signup';
+      const url = `/api/auth/${endpoint}`;
+      const data = isLogin ? {
+        email: formData.email,
+        password: formData.password
+      } : {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password
+      };
+
+      console.log('Making request to:', url);
+      console.log('With data:', { ...data, password: '[REDACTED]' });
+
       const response = await axios({
         method: 'POST',
-        url: `/api/auth/${endpoint}`,
-        data: isLogin ? {
-          email: formData.email,
-          password: formData.password
-        } : {
-          name: formData.name,
-          email: formData.email,
-          password: formData.password
-        },
+        url,
+        data,
         headers: {
           'Content-Type': 'application/json',
         }
@@ -292,7 +299,13 @@ const AuthPage = () => {
         }
       }
     } catch (error) {
-      console.error('Auth error:', error);
+      console.error('Auth error:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        url: error.config?.url
+      });
+      
       dispatch(loginFailure(error.message));
       const errorMessage = error.response?.data?.error || 
                           error.message || 
